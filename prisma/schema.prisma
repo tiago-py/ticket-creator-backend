@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SOLICITANTE
+  ATENDENTE
+}
+
+enum RequestStatus {
+  ABERTO
+  EM_ATENDIMENTO
+  CONCLUIDO
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         UserRole  @default(SOLICITANTE)
+  requests     Request[]
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  @@map("users")
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  requests  Request[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  @@map("categories")
+}
+
+model Request {
+  id          String        @id @default(uuid())
+  code        String        @unique
+  title       String
+  description String        @db.Text
+  status      RequestStatus @default(ABERTO)
+  requesterId String        @map("requester_id")
+  categoryId  String        @map("category_id")
+  requester   User          @relation(fields: [requesterId], references: [id], onDelete: Restrict)
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  @@index([requesterId])
+  @@index([status])
+  @@index([categoryId])
+  @@index([createdAt])
+  @@map("requests")
+}
