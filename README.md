@@ -59,11 +59,22 @@ npm run start:dev
 
 A API fica em `http://localhost:3000/api` e o Swagger em `http://localhost:3000/api/docs`.
 
-Para executar toda a solução do backend em contêineres:
+Para executar a solução completa (PostgreSQL, migrations, API e frontend), mantenha
+`ticket-creator-backend` e `ticket-creator-frontend` no mesmo diretório e execute, a partir
+do backend:
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
+
+A aplicação fica disponível em `http://localhost:8080`. O frontend usa o Nginx como
+proxy para a API, portanto não é necessário expor o PostgreSQL nem configurar uma URL
+separada no navegador. As migrations são aplicadas automaticamente antes da API iniciar.
+
+Use `docker compose logs -f` para acompanhar os serviços e `docker compose down` para
+encerrá-los. Os dados permanecem no volume `postgres_data`. Para mudar porta, credenciais
+ou segredo JWT, copie `.env.example` para `.env` e ajuste `APP_PORT`, `POSTGRES_*` e
+`JWT_SECRET`.
 
 ## Contas do seed
 

@@ -3,3 +3,7 @@ dist
 coverage
 .git
 .env
+.env.*
+!.env.example
+docker-compose*.yml
+README.md
