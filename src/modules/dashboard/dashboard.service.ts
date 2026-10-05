@@ -6,7 +6,10 @@ import { PrismaService } from '../../infrastructure/database/prisma.service';
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
   async summary(actor: AuthUser) {
-    const where = actor.role === UserRole.SOLICITANTE ? { requesterId: actor.id } : {};
+    const where =
+      actor.role === UserRole.SOLICITANTE
+        ? { requesterId: actor.id, deletedAt: null }
+        : { deletedAt: null };
     const [total, open, inProgress, completed] = await this.prisma.$transaction([
       this.prisma.request.count({ where }),
       this.prisma.request.count({ where: { ...where, status: RequestStatus.ABERTO } }),

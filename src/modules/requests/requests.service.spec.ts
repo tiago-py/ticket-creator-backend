@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { UserRole } from '@prisma/client';
+import { RequestPriority, UserRole } from '@prisma/client';
 import type { AuthUser } from '../../http/current-user.decorator';
 import type { PrismaService } from '../../infrastructure/database/prisma.service';
 import { ListRequestsDto } from './dto/list-requests.dto';
@@ -24,7 +24,12 @@ describe('RequestsService', () => {
       role: UserRole.SOLICITANTE,
     };
     await service.create(
-      { title: 'Novo acesso', description: 'Preciso de acesso ao sistema.', category: 'Jurídico' },
+      {
+        title: 'Novo acesso',
+        description: 'Preciso de acesso ao sistema.',
+        category: 'Jurídico',
+        priority: RequestPriority.ALTA,
+      },
       actor,
     );
     expect(create).toHaveBeenCalledWith(
@@ -49,7 +54,7 @@ describe('RequestsService', () => {
     };
     await service.list(new ListRequestsDto(), actor);
     expect(findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { requesterId: 'user-1' } }),
+      expect.objectContaining({ where: { requesterId: 'user-1', deletedAt: null } }),
     );
   });
   it('não restringe a consulta do atendente por autor', async () => {
@@ -62,6 +67,6 @@ describe('RequestsService', () => {
       role: UserRole.ATENDENTE,
     };
     await service.list(new ListRequestsDto(), actor);
-    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: {} }));
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { deletedAt: null } }));
   });
 });

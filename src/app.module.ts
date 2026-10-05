@@ -6,6 +6,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { HealthModule } from './modules/health/health.module';
 import { RequestsModule } from './modules/requests/requests.module';
+import { UsersModule } from './modules/users/users.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -15,6 +16,7 @@ import { RequestsModule } from './modules/requests/requests.module';
     RequestsModule,
     DashboardModule,
     HealthModule,
+    UsersModule,
   ],
 })
 export class AppModule {}

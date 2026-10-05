@@ -19,6 +19,8 @@ import { ListRequestsDto } from './dto/list-requests.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { RequestsService } from './requests.service';
+import { AssignRequestDto } from './dto/assign-request.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 @ApiTags('requests')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -50,5 +52,19 @@ export class RequestsController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.updateStatus(id, dto.status, user);
+  }
+  @Patch(':id/assignee') assign(
+    @Param('id') id: string,
+    @Body() dto: AssignRequestDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.service.assign(id, dto.assigneeId ?? null, user);
+  }
+  @Post(':id/comments') comment(
+    @Param('id') id: string,
+    @Body() dto: CreateCommentDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.service.comment(id, dto.message, user);
   }
 }

@@ -18,13 +18,23 @@ enum RequestStatus {
   CONCLUIDO
 }
 
+enum RequestPriority {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
 model User {
   id           String    @id @default(uuid())
   name         String
   email        String    @unique
   passwordHash String    @map("password_hash")
   role         UserRole  @default(SOLICITANTE)
-  requests     Request[]
+  requests     Request[]        @relation("RequesterRequests")
+  assignedRequests Request[]    @relation("AssigneeRequests")
+  comments     RequestComment[]
+  history      RequestHistory[]
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   @@map("users")
@@ -33,6 +43,7 @@ model User {
 model Category {
   id        String    @id @default(uuid())
   name      String    @unique
+  active    Boolean   @default(true)
   requests  Request[]
   createdAt DateTime  @default(now()) @map("created_at")
   @@map("categories")
@@ -44,15 +55,48 @@ model Request {
   title       String
   description String        @db.Text
   status      RequestStatus @default(ABERTO)
+  priority    RequestPriority @default(MEDIA)
   requesterId String        @map("requester_id")
   categoryId  String        @map("category_id")
-  requester   User          @relation(fields: [requesterId], references: [id], onDelete: Restrict)
+  assigneeId  String?       @map("assignee_id")
+  requester   User          @relation("RequesterRequests", fields: [requesterId], references: [id], onDelete: Restrict)
+  assignee    User?         @relation("AssigneeRequests", fields: [assigneeId], references: [id], onDelete: SetNull)
   category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  comments    RequestComment[]
+  history     RequestHistory[]
+  deletedAt   DateTime?     @map("deleted_at")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
   @@index([requesterId])
   @@index([status])
   @@index([categoryId])
+  @@index([assigneeId])
+  @@index([priority])
   @@index([createdAt])
   @@map("requests")
+}
+
+model RequestComment {
+  id        String   @id @default(uuid())
+  message   String   @db.Text
+  requestId String   @map("request_id")
+  authorId  String   @map("author_id")
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([requestId, createdAt])
+  @@map("request_comments")
+}
+
+model RequestHistory {
+  id        String   @id @default(uuid())
+  action    String
+  details   String?
+  requestId String   @map("request_id")
+  actorId   String   @map("actor_id")
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  actor     User     @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([requestId, createdAt])
+  @@map("request_history")
 }
